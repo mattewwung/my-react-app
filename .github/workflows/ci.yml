@@ -1,0 +1,44 @@
+name: React CI with Cypress
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 拉取代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. 安装 Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      # 3. 安装依赖并运行 Cypress 组件测试
+      # 使用官方 Cypress Action 会自动处理缓存，极大加快速度
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          # 执行组件测试
+          component: true
+          # 运行前执行 lint 和 build 确保代码质量
+          runTests: true
+        env:
+          # 如果你有环境变量，可以在这里添加
+          NODE_ENV: test
+
+      # 4. (可选) 确保项目可以成功打包
+      - name: Build project
+        run: npm run build
+
+      # 5. (可选) 代码规范检查
+      - name: Run Lint
+        run: npm run lint
