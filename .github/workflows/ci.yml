@@ -1,4 +1,4 @@
-name: React CI (Multi-Job)
+name: React CI (Matrix Mode)
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
   workflow_dispatch: {}
 
 jobs:
-  # Job 1: 代码规范检查
+  # 保持 Lint 独立且先行，作为最快反馈
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -17,38 +17,42 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-      - name: Install dependencies
-        run: npm ci
-      - name: Run Lint
-        run: npm run lint
+      - run: npm ci
+      - run: npm run lint
 
-  # Job 2: 组件测试 (Cypress)
-  test:
-    runs-on: ubuntu-latest
-    # 建议加上 needs，确保代码规范通过后再跑测试，节省资源
-    needs: lint 
+  # 使用 Matrix 运行测试和构建
+  ci-matrix:
+    needs: lint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false # 即使一个版本失败，其他版本也继续跑完
+      matrix:
+        # 在 18, 20, 22 三个 Node 版本上运行
+        node-version: [18, 20, 22]
+        # 在 Linux 和 macOS 上测试 (可选)
+        os: [ubuntu-latest] 
+        
+    name: Node ${{ matrix.node-version }} on ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - name: Cypress run
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      # 运行 Cypress 组件测试
+      - name: Cypress Component Tests
         uses: cypress-io/github-action@v6
         with:
           component: true
-          # 因为我们在 CI 脚本里写了 cypress run --component
-          command: npm run test:ci 
+          command: npm run test:ci
         env:
           NODE_ENV: test
 
-  # Job 3: 构建检查
-  build:
-    runs-on: ubuntu-latest
-    needs: lint
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-      - name: Install dependencies
-        run: npm ci
+      # 确保在该 Node 版本下也能成功构建
       - name: Build project
-        run: npm run build
+        run: |
+          npm ci
+          npm run build
