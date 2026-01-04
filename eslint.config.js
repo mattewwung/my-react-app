@@ -3,6 +3,7 @@ import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
+import pluginCypress from 'eslint-plugin-cypress'
 
 export default defineConfig([
   globalIgnores(['dist']),
@@ -11,8 +12,7 @@ export default defineConfig([
     extends: [
       js.configs.recommended,
       reactHooks.configs.flat.recommended,
-      reactRefresh.configs.vite,
-      "plugin:cypress/recommended"
+      reactRefresh.configs.vite
     ],
     languageOptions: {
       ecmaVersion: 2020,
@@ -25,6 +25,15 @@ export default defineConfig([
     },
     rules: {
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+    },
+  },
+  {
+    files: ['cypress/**/*.js', '**/*.cy.{js,jsx}'],
+    extends: [
+      pluginCypress.configs.recommended,
+    ],
+    rules: {
+      'cypress/no-unnecessary-waiting': 'off',
     },
   },
 ])
