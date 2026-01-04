@@ -5,6 +5,7 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
+  workflow_dispatch: {}
 
 jobs:
   # Job 1: 代码规范检查
