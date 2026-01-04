@@ -1,4 +1,4 @@
-name: React CI (Matrix Mode)
+name: React CI (Matrix & Artifacts)
 
 on:
   push:
@@ -8,7 +8,6 @@ on:
   workflow_dispatch: {}
 
 jobs:
-  # 保持 Lint 独立且先行，作为最快反馈
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -20,19 +19,14 @@ jobs:
       - run: npm ci
       - run: npm run lint
 
-  # 使用 Matrix 运行测试和构建
-  ci-matrix:
+  test-and-build:
     needs: lint
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
-      fail-fast: false # 即使一个版本失败，其他版本也继续跑完
+      fail-fast: false
       matrix:
-        # 在 18, 20, 22 三个 Node 版本上运行
         node-version: [18, 20, 22]
-        # 在 Linux 和 macOS 上测试 (可选)
-        os: [ubuntu-latest] 
-        
-    name: Node ${{ matrix.node-version }} on ${{ matrix.os }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -42,8 +36,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      # 运行 Cypress 组件测试
-      - name: Cypress Component Tests
+      - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
           component: true
@@ -51,8 +44,17 @@ jobs:
         env:
           NODE_ENV: test
 
-      # 确保在该 Node 版本下也能成功构建
+      # --- 关键步骤：上传产物 ---
+      - name: Upload Cypress Artifacts
+        uses: actions/upload-artifact@v4
+        # if: failure() 意味着只有在上面的测试步骤报错时，才会运行这一步
+        if: failure() 
+        with:
+          # 使用 matrix 变量确保每个版本的截图名字不同，例如 cypress-screenshots-20
+          name: cypress-screenshots-${{ matrix.node-version }}
+          path: cypress/screenshots
+          # 产物保留天数（默认 90 天，通常设为 7 天足够了）
+          retention-days: 7
+
       - name: Build project
-        run: |
-          npm ci
-          npm run build
+        run: npm run build
