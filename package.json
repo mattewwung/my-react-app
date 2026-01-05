@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "test": "cypress open",
     "test:ci": "cypress run --component",
-    "cy:parallel" : "cypress-parallel -s test:ci -t 2 -d '__test__'"
+    "cy:parallel" : "cypress-parallel -s test:ci -t 4 -d '__test__'"
   },
   "dependencies": {
     "react": "^19.2.0",
