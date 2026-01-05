@@ -40,7 +40,7 @@ jobs:
         uses: cypress-io/github-action@v6
         with:
           component: true
-          command: npm run test:ci
+          command: npm run cy:parallel
         env:
           NODE_ENV: test
 
