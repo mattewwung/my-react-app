@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "cypress open",
-    "test:ci": "cypress run --component"
+    "test:ci": "cypress run --component",
+    "cy:parallel" : "cypress-parallel -s test:ci -t 2 -d '__test__'"
   },
   "dependencies": {
     "react": "^19.2.0",
@@ -21,6 +22,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
     "cypress": "^15.8.1",
+    "cypress-parallel": "^0.15.0",
     "eslint": "^9.39.2",
     "eslint-plugin-cypress": "^5.2.0",
     "eslint-plugin-react-hooks": "^7.0.1",

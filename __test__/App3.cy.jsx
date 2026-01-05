@@ -4,10 +4,10 @@ describe('<App />', () => {
   it('renders', () => {
     // see: https://on.cypress.io/mounting-react
     cy.mount(<App />);
-    cy.wait(50000);
+    cy.wait(20000);
     cy.get('[data-cy="counter-button"]').as('counterButton')
     cy.get('@counterButton').should('have.text', 'count is 0');
-    cy.wait(15000);
+    cy.wait(40000);
     for (let i = 0; i < 10; i++) {
       cy.get('@counterButton').click();
     }
